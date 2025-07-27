@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import {MdDarkMode} from "react-icons/md";
-import {FiSun} from "react-icons/fi";
+import React, { useState, useRef } from "react";
+import { MdDarkMode } from "react-icons/md";
+import { FiSun } from "react-icons/fi";
+import * as htmlToImage from "html-to-image";
 
 const choices = ["rock", "paper", "scissors"];
 
@@ -21,6 +22,8 @@ const App = () => {
     const [result, setResult] = useState("");
     const [score, setScore] = useState({ win: 0, lose: 0, draw: 0 });
     const [darkMode, setDarkMode] = useState(true);
+
+    const gameRef = useRef(null);
 
     const play = (choice) => {
         const compChoice = choices[Math.floor(Math.random() * 3)];
@@ -44,8 +47,19 @@ const App = () => {
         return "";
     };
 
+    const downloadImage = () => {
+        if (gameRef.current === null) return;
+        htmlToImage.toPng(gameRef.current).then((dataUrl) => {
+            const link = document.createElement("a");
+            link.download = "rps-result.png";
+            link.href = dataUrl;
+            link.click();
+        });
+    };
+
     return (
         <div
+            ref={gameRef}
             className={`flex flex-col items-center justify-center min-h-screen transition-colors duration-500 px-4 ${
                 darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"
             }`}
@@ -118,9 +132,17 @@ const App = () => {
             </div>
 
             {/* Score */}
-            <div className="text-lg font-medium">
+            <div className="text-lg font-medium mb-6">
                 Won: {score.win} | Lost: {score.lose} | Draw: {score.draw}
             </div>
+
+            {/* Download Button */}
+            <button
+                onClick={downloadImage}
+                className="cursor-pointer px-5 py-2 bg-green-500 rounded-lg text-white hover:bg-green-600 transition"
+            >
+                Download Result
+            </button>
         </div>
     );
 };
